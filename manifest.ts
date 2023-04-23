@@ -9,7 +9,7 @@ const GoogleProvider = DefineOAuth2Provider({
     authorization_url: 'https://accounts.google.com/o/oauth2/auth',
     token_url: 'https://oauth2.googleapis.com/token',
     client_id:
-      '512307413488-a1vabvo124pvml53p0tlg6jtraen5heu.apps.googleusercontent.com',
+      '512307413488-rgadlpv34sdccj9qc1o6uj4iuk45v8em.apps.googleusercontent.com',
     scope: [
       'https://www.googleapis.com/auth/calendar.readonly',
       'https://www.googleapis.com/auth/userinfo.email',
