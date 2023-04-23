@@ -1,5 +1,5 @@
-import { Manifest } from "deno-slack-sdk/mod.ts";
-import GreetingWorkflow from "./workflows/greeting_workflow.ts";
+import { Manifest } from 'deno-slack-sdk/mod.ts'
+import GreetingWorkflow from './workflows/greeting_workflow.ts'
 
 /**
  * The app manifest contains the app's configuration. This
@@ -7,11 +7,11 @@ import GreetingWorkflow from "./workflows/greeting_workflow.ts";
  * https://api.slack.com/future/manifest
  */
 export default Manifest({
-  name: "google-calendar-event-notifier-app-1",
+  name: 'Google Calendar Notifier',
   description:
-    "A sample that demonstrates using a function, workflow and trigger to send a greeting",
-  icon: "assets/default_new_app_icon.png",
+    'A alternative Google Calendar for Team Events. This app notifies Google Calendar events to Slack channel.',
+  icon: 'assets/default_new_app_icon.png',
   workflows: [GreetingWorkflow],
   outgoingDomains: [],
-  botScopes: ["commands", "chat:write", "chat:write.public"],
-});
+  botScopes: ['commands', 'chat:write', 'chat:write.public'],
+})
