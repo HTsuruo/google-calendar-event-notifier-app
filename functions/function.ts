@@ -1,15 +1,15 @@
-import { DefineFunction, Schema, SlackFunction } from 'deno-slack-sdk/mod.ts'
+import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 
-export const GreetingFunctionDefinition = DefineFunction({
-  callback_id: 'greeting_function',
-  title: 'Generate a greeting',
-  description: 'Generate a greeting',
-  source_file: 'functions/greeting_function.ts',
+export const FunctionDefinition = DefineFunction({
+  callback_id: "function",
+  title: "Generate a greeting",
+  description: "Generate a greeting",
+  source_file: "functions/function.ts",
   input_parameters: {
     properties: {
       googleAccessTokenId: {
         type: Schema.slack.types.oauth2,
-        oauth2_provider_key: 'google',
+        oauth2_provider_key: "google",
       },
     },
     required: [],
@@ -18,20 +18,20 @@ export const GreetingFunctionDefinition = DefineFunction({
     properties: {
       greeting: {
         type: Schema.types.string,
-        description: 'Greeting for the recipient',
+        description: "Greeting for the recipient",
       },
     },
-    required: ['greeting'],
+    required: ["greeting"],
   },
-})
+});
 
 export default SlackFunction(
-  GreetingFunctionDefinition,
+  FunctionDefinition,
   async ({ inputs, client }) => {
     const tokenResponse = await client.apps.auth.external.get({
       external_token_id: inputs.googleAccessTokenId,
-    })
-    console.log(`tokenResponse: ${JSON.stringify(tokenResponse)}`)
+    });
+    console.log(`tokenResponse: ${JSON.stringify(tokenResponse)}`);
     // const client = await authenticate({
     //   // ref. https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja#calendar
     //   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
@@ -44,6 +44,6 @@ export default SlackFunction(
       outputs: {
         greeting: `ありがとうございました: ${inputs.googleAccessTokenId}`,
       },
-    }
-  }
-)
+    };
+  },
+);

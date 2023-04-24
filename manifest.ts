@@ -1,29 +1,29 @@
-import { DefineOAuth2Provider, Manifest, Schema } from 'deno-slack-sdk/mod.ts'
-import GreetingWorkflow from './workflows/greeting_workflow.ts'
+import { DefineOAuth2Provider, Manifest, Schema } from "deno-slack-sdk/mod.ts";
+import Workflow from "./workflows/workflow.ts";
 
 const GoogleProvider = DefineOAuth2Provider({
-  provider_key: 'google',
+  provider_key: "google",
   provider_type: Schema.providers.oauth2.CUSTOM,
   options: {
-    provider_name: 'Google',
-    authorization_url: 'https://accounts.google.com/o/oauth2/auth',
-    token_url: 'https://oauth2.googleapis.com/token',
+    provider_name: "Google",
+    authorization_url: "https://accounts.google.com/o/oauth2/auth",
+    token_url: "https://oauth2.googleapis.com/token",
     client_id:
-      '512307413488-rgadlpv34sdccj9qc1o6uj4iuk45v8em.apps.googleusercontent.com',
+      "512307413488-rgadlpv34sdccj9qc1o6uj4iuk45v8em.apps.googleusercontent.com",
     scope: [
-      'https://www.googleapis.com/auth/calendar.readonly',
-      'https://www.googleapis.com/auth/userinfo.email',
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/userinfo.email",
     ],
     authorization_url_extras: {
-      prompt: 'consent',
-      access_type: 'offline',
+      prompt: "consent",
+      access_type: "offline",
     },
     identity_config: {
-      url: 'https://www.googleapis.com/oauth2/v1/userinfo',
-      account_identifier: '$.email',
+      url: "https://www.googleapis.com/oauth2/v1/userinfo",
+      account_identifier: "$.email",
     },
   },
-})
+});
 
 /**
  * The app manifest contains the app's configuration. This
@@ -31,12 +31,12 @@ const GoogleProvider = DefineOAuth2Provider({
  * https://api.slack.com/future/manifest
  */
 export default Manifest({
-  name: 'Google Calendar Notifier',
+  name: "Google Calendar Notifier",
   description:
-    'A alternative Google Calendar for Team Events. This app notifies Google Calendar events to Slack channel.',
-  icon: 'assets/default_new_app_icon.png',
-  workflows: [GreetingWorkflow],
+    "A alternative Google Calendar for Team Events. This app notifies Google Calendar events to Slack channel.",
+  icon: "assets/default_new_app_icon.png",
+  workflows: [Workflow],
   externalAuthProviders: [GoogleProvider],
   outgoingDomains: [],
-  botScopes: ['commands', 'chat:write', 'chat:write.public'],
-})
+  botScopes: ["commands", "chat:write", "chat:write.public"],
+});
