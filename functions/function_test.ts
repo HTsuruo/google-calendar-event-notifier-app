@@ -8,7 +8,7 @@ Deno.test("Function test", async () => {
   const inputs = { message: "Welcome to the team!" };
   const { outputs } = await Function(createContext({ inputs }));
   assertEquals(
-    outputs?.greeting.includes("Welcome to the team!"),
+    outputs?.message.includes("Welcome to the team!"),
     true,
   );
 });

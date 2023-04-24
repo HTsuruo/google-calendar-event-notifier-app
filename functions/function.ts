@@ -16,12 +16,12 @@ export const FunctionDefinition = DefineFunction({
   },
   output_parameters: {
     properties: {
-      greeting: {
+      message: {
         type: Schema.types.string,
         description: "Greeting for the recipient",
       },
     },
-    required: ["greeting"],
+    required: ["message"],
   },
 });
 
@@ -32,6 +32,13 @@ export default SlackFunction(
       external_token_id: inputs.googleAccessTokenId,
     });
     console.log(`tokenResponse: ${JSON.stringify(tokenResponse)}`);
+    if (tokenResponse.error) {
+      const error =
+        `Failed to retrieve the external auth token due to [${tokenResponse.error}]`;
+      return { error };
+    }
+    const externalToken = tokenResponse.external_token;
+    console.log(`externalToken: ${externalToken}`);
     // const client = await authenticate({
     //   // ref. https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja#calendar
     //   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
@@ -42,7 +49,7 @@ export default SlackFunction(
     // }
     return {
       outputs: {
-        greeting: `ありがとうございました: ${inputs.googleAccessTokenId}`,
+        message: `ありがとうございました: ${inputs.googleAccessTokenId}`,
       },
     };
   },

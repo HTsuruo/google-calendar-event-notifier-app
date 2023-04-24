@@ -12,9 +12,12 @@ const functionStep = Workflow.addStep(
   {},
 );
 
+// Buit-in functions
+// ref. https://api.slack.com/automation/functions
+// `Schema.slack.functions`に関数が定義されており`addStep`だけで利用できる。
 Workflow.addStep(Schema.slack.functions.SendMessage, {
   channel_id: "C02SV0FPLGP",
-  message: functionStep.outputs.greeting,
+  message: functionStep.outputs.message,
 });
 
 export default Workflow;
