@@ -9,7 +9,11 @@ const Workflow = DefineWorkflow({
 
 const functionStep = Workflow.addStep(
   FunctionDefinition,
-  {},
+  {
+    googleAccessTokenId: {
+      credential_source: "DEVELOPER",
+    },
+  },
 );
 
 // Buit-in functions

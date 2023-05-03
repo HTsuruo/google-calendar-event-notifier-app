@@ -49,7 +49,7 @@ export default SlackFunction(
     // }
     return {
       outputs: {
-        message: `ありがとうございました: ${inputs.googleAccessTokenId}`,
+        message: `ありがとうございました`,
       },
     };
   },
