@@ -1,7 +1,8 @@
 {
   "imports": {
-    "deno-slack-sdk/": "https://deno.land/x/deno_slack_sdk@2.1.0/",
-    "deno-slack-api/": "https://deno.land/x/deno_slack_api@2.0.1/",
+    "deno-slack-sdk/": "https://deno.land/x/deno_slack_sdk@2.1.2/",
+    "deno-slack-api/": "https://deno.land/x/deno_slack_api@2.1.0/",
+    "ptera/": "https://deno.land/x/ptera/mod.ts",
     "google-calendar-api/": "https://googleapis.deno.dev/v1/calendar:v3.ts"
   }
 }

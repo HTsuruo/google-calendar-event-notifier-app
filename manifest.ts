@@ -37,6 +37,9 @@ export default Manifest({
   icon: "assets/default_new_app_icon.png",
   workflows: [Workflow],
   externalAuthProviders: [GoogleProvider],
-  outgoingDomains: [],
+  outgoingDomains: [
+    "googleapis.deno.dev",
+    "www.googleapis.com",
+  ],
   botScopes: ["commands", "chat:write", "chat:write.public"],
 });
