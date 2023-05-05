@@ -3,6 +3,7 @@ import type { Event, Events } from "google-calendar-api";
 import { Attachment } from "./type.ts";
 import * as logger from "logger";
 import { formatEventDate, getTodayStartAndEnd } from "./util/date_util.ts";
+import paramCase from "https://deno.land/x/case@v2.1.0/paramCase.ts";
 
 export const TodayCalendarEventsDefinition = DefineFunction({
   callback_id: "today_calendar_events",
@@ -88,17 +89,26 @@ export default SlackFunction(
         text: `There is ${events?.length} event today`,
         attachments: events?.map((
           event,
-        ) =>
-          JSON.stringify({
-            color: "#3A6FE1",
-            title: event.summary,
-            text: event.description
-              ? `${formatEventDate(event)}\n${event.description}`
-              : formatEventDate(event),
-            title_link: event.htmlLink,
-          } as Attachment)
-        ),
+        ) => JSON.stringify(makeEventAttachment(event))),
       },
     };
   },
 );
+
+// Calendar EventをもとにSlackのAttachmentを作成する
+function makeEventAttachment(event: Event): Attachment {
+  let text = formatEventDate(event);
+  if (event.description) {
+    text += `\n${event.description}`;
+  }
+  if (event.location) {
+    text += `\n${event.location}`;
+  }
+  return {
+    color: "#3A6FE1",
+    title: event.summary,
+    title_link: event.htmlLink,
+    text: text,
+    footer: `Created by: ${event.creator?.email}`,
+  } as Attachment;
+}
