@@ -10,7 +10,7 @@ import PostTodayEventsWorkflow from "../workflows/post_today_events_workflow.ts"
 const trigger: Trigger<typeof PostTodayEventsWorkflow.definition> = {
   type: "shortcut",
   name: "Post daily events at 9:00 AM",
-  workflow: "#/workflows/post_today_events_workflow",
+  workflow: `#/workflows/${PostTodayEventsWorkflow.definition.callback_id}`,
 };
 
 export default trigger;
