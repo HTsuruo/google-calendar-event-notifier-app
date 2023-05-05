@@ -1,6 +1,6 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { Events } from "https://googleapis.deno.dev/v1/calendar:v3.ts";
-import { datetime } from "https://deno.land/x/ptera@v1.0.2/mod.ts";
+import { Events } from "google-calendar-api";
+import { datetime } from "ptera/mod.ts";
 export const FunctionDefinition = DefineFunction({
   callback_id: "function",
   title: "Generate a greeting",
