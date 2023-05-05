@@ -7,7 +7,7 @@ import { makeEventAttachment } from "./util.ts";
 export const TodayCalendarEventsDefinition = DefineFunction({
   callback_id: "today_calendar_events",
   title: "Fetch today calendar events",
-  source_file: "functions/today_calendar_events.ts",
+  source_file: "functions/today_calendar_events_function.ts",
   input_parameters: {
     properties: {
       googleAccessTokenId: {

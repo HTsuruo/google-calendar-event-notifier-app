@@ -4,7 +4,7 @@ import * as logger from "logger";
 export const SendAttachmentMessageDefinition = DefineFunction({
   callback_id: "send_attachment_message",
   title: "Send attachment message",
-  source_file: "functions/send_attachment_message.ts",
+  source_file: "functions/send_attachment_message_function.ts",
   input_parameters: {
     properties: {
       channel_id: {
