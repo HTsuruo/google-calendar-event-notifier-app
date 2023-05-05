@@ -1,13 +1,12 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import type { Event, Events } from "google-calendar-api";
-import { datetime } from "ptera/mod.ts";
-import * as logger from "logger";
 import { Attachment } from "./send_attachment_message.ts";
-export const FunctionDefinition = DefineFunction({
-  callback_id: "function",
-  title: "Generate a greeting",
-  description: "Generate a greeting",
-  source_file: "functions/function.ts",
+import * as logger from "logger";
+import { formatEventDate, getTodayStartAndEnd } from "./util/date_util.ts";
+export const FetchCalendarEventsDefinition = DefineFunction({
+  callback_id: "fetch_calendar_events",
+  title: "Fetch calendar events",
+  source_file: "functions/fetch_calendar_events.ts",
   input_parameters: {
     properties: {
       googleAccessTokenId: {
@@ -21,18 +20,15 @@ export const FunctionDefinition = DefineFunction({
     properties: {
       channel_id: {
         type: Schema.types.string,
-        description: "Slack channel id to send outputs",
       },
       text: {
         type: Schema.types.string,
-        description: "Greeting for the recipient",
       },
       attachments: {
         type: Schema.types.array,
         items: {
           type: Schema.types.string,
         },
-        description: "Greeting for the recipient",
       },
     },
     required: ["channel_id"],
@@ -40,7 +36,7 @@ export const FunctionDefinition = DefineFunction({
 });
 
 export default SlackFunction(
-  FunctionDefinition,
+  FetchCalendarEventsDefinition,
   async ({ inputs, client, env }) => {
     const tokenResponse = await client.apps.auth.external.get({
       external_token_id: inputs.googleAccessTokenId,
@@ -80,7 +76,6 @@ export default SlackFunction(
         return { error: res.statusText };
       }
       const json: Events = await res.json();
-      // logger.info(`items: ${Deno.inspect(json.items, { compact: false })}`);
       events = json.items;
     } catch (error) {
       logger.error(error);
@@ -89,12 +84,12 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        text: events?.at(0)?.summary ?? "",
+        text: `There is ${events?.length} event today`,
         attachments: events?.map((
           event,
         ) =>
           JSON.stringify({
-            color: "#FF82B2",
+            color: "#3A6FE1",
             title: event.summary,
             text: event.description
               ? `${formatEventDate(event)}\n${event.description}`
@@ -106,33 +101,3 @@ export default SlackFunction(
     };
   },
 );
-
-// 今日の0時と24時を取得する
-function getTodayStartAndEnd(): { start: Date; end: Date } {
-  const now = datetime();
-  const today = datetime(
-    {
-      year: now.year,
-      month: now.month,
-      day: now.day,
-    },
-  );
-  const afterDay = today.add({ day: 1 });
-  const startAndEnd = {
-    start: today.toJSDate(),
-    end: afterDay.toJSDate(),
-  };
-  logger.info(`today: ${Deno.inspect(startAndEnd, { compact: false })}`);
-  return startAndEnd;
-}
-
-function formatEventDate(event: Event) {
-  const startTime = datetime(event.start?.dateTime);
-  const endTime = datetime(event.end?.dateTime);
-  // 終日イベントの場合は時刻を表示しなし
-  // ex: `2023-01-01`表示となり時刻がのらないため、そこで判別する
-  if (startTime.hour === endTime.hour) {
-    return "終日";
-  }
-  return `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`;
-}

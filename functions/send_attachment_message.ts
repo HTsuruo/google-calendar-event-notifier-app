@@ -8,13 +8,9 @@ export const SendAttachmentMessageDefinition = DefineFunction({
     properties: {
       channel_id: {
         type: Schema.slack.types.channel_id,
-        title: "Select a channel",
-        description: "Search all channels",
       },
       text: {
         type: Schema.types.string,
-        title: "Select a channel",
-        description: "Search all channels",
       },
       attachments: {
         type: Schema.types.array,
@@ -22,8 +18,6 @@ export const SendAttachmentMessageDefinition = DefineFunction({
           // TODO(tsuruoka): object型だとエラーになってしまうため、仕方なくstring型にしてJSON文字列を格納している
           type: Schema.types.string,
         },
-        title: "Select a channel",
-        description: "Search all channels",
       },
     },
     required: ["channel_id", "attachments"],
