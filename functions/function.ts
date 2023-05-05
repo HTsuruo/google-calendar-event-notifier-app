@@ -1,6 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import type { Event, Events } from "google-calendar-api";
 import { datetime } from "ptera/mod.ts";
+import * as logger from "logger";
 export const FunctionDefinition = DefineFunction({
   callback_id: "function",
   title: "Generate a greeting",
@@ -36,14 +37,13 @@ export default SlackFunction(
     const tokenResponse = await client.apps.auth.external.get({
       external_token_id: inputs.googleAccessTokenId,
     });
-    console.log(`tokenResponse: ${JSON.stringify(tokenResponse)}`);
     if (tokenResponse.error) {
       const error =
         `Failed to retrieve the external auth token due to [${tokenResponse.error}]`;
       return { error };
     }
     const externalToken = tokenResponse.external_token;
-    console.log(`externalToken: ${externalToken}`);
+    logger.info(`externalToken: ${externalToken}`);
 
     const calendarId = env.CALENDAR_ID;
     const wholeToday = getTodayStartAndEnd();
@@ -71,10 +71,10 @@ export default SlackFunction(
         return { error: res.statusText };
       }
       const json: Events = await res.json();
-      console.log(`items: ${JSON.stringify(json.items)}`);
+      logger.info(`items: ${Deno.inspect(json.items, { compact: false })}`);
       events = json.items;
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       return { error };
     }
     return {
@@ -97,10 +97,10 @@ function getTodayStartAndEnd(): { start: Date; end: Date } {
     },
   );
   const afterDay = today.add({ day: 1 });
-  const wholeToday = {
+  const startAndEnd = {
     start: today.toJSDate(),
     end: afterDay.toJSDate(),
   };
-  console.log(`today: ${JSON.stringify(wholeToday)}`);
-  return wholeToday;
+  logger.info(`today: ${Deno.inspect(startAndEnd, { compact: false })}`);
+  return startAndEnd;
 }
