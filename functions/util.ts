@@ -1,6 +1,7 @@
 import { datetime } from "ptera/mod.ts";
 import type { Event } from "google-calendar-api";
 import * as logger from "logger";
+import { Attachment } from "./type.ts";
 
 // 今日の0時と24時を取得する
 export function getTodayStartAndEnd(): { start: Date; end: Date } {
@@ -30,4 +31,22 @@ export function formatEventDate(event: Event) {
     return "終日";
   }
   return `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`;
+}
+
+// Calendar EventをもとにSlackのAttachmentを作成する
+export function makeEventAttachment(event: Event): Attachment {
+  let text = formatEventDate(event);
+  if (event.description) {
+    text += `\n${event.description}`;
+  }
+  if (event.location) {
+    text += `\n${event.location}`;
+  }
+  return {
+    color: "#3A6FE1",
+    title: event.summary,
+    title_link: event.htmlLink,
+    text: text,
+    footer: `Created by: ${event.creator?.email}`,
+  } as Attachment;
 }
