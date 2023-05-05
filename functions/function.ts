@@ -27,12 +27,15 @@ export const FunctionDefinition = DefineFunction({
         type: Schema.types.string,
         description: "Greeting for the recipient",
       },
-      attachment: {
-        type: Schema.types.object,
+      attachments: {
+        type: Schema.types.array,
+        items: {
+          type: Schema.types.string,
+        },
         description: "Greeting for the recipient",
       },
     },
-    required: ["channel_id", "attachment"],
+    required: ["channel_id"],
   },
 });
 
@@ -62,7 +65,9 @@ export default SlackFunction(
         // Error: TypeError: Request with GET/HEAD method cannot have body.
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events` +
           `?timeMin=${today.start.toISOString()}` +
-          `&timeMax=${today.end.toISOString()}`,
+          `&timeMax=${today.end.toISOString()}` +
+          `&singleEvents=true` +
+          `&orderBy=startTime`,
         {
           method: "GET",
           headers: {
@@ -75,7 +80,7 @@ export default SlackFunction(
         return { error: res.statusText };
       }
       const json: Events = await res.json();
-      logger.info(`items: ${Deno.inspect(json.items, { compact: false })}`);
+      // logger.info(`items: ${Deno.inspect(json.items, { compact: false })}`);
       events = json.items;
     } catch (error) {
       logger.error(error);
@@ -85,12 +90,18 @@ export default SlackFunction(
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
         text: events?.at(0)?.summary ?? "",
-        attachment: {
-          color: "#000",
-          pretext: "これはプレテキストです",
-          title: "タイトルです",
-          title_link: "https://api.slack.com/lang/ja-jp",
-        } as Attachment,
+        attachments: events?.map((
+          event,
+        ) =>
+          JSON.stringify({
+            color: "#FF82B2",
+            title: event.summary,
+            text: event.description
+              ? `${formatEventDate(event)}\n${event.description}`
+              : formatEventDate(event),
+            title_link: event.htmlLink,
+          } as Attachment)
+        ),
       },
     };
   },
@@ -113,4 +124,15 @@ function getTodayStartAndEnd(): { start: Date; end: Date } {
   };
   logger.info(`today: ${Deno.inspect(startAndEnd, { compact: false })}`);
   return startAndEnd;
+}
+
+function formatEventDate(event: Event) {
+  const startTime = datetime(event.start?.dateTime);
+  const endTime = datetime(event.end?.dateTime);
+  // 終日イベントの場合は時刻を表示しなし
+  // ex: `2023-01-01`表示となり時刻がのらないため、そこで判別する
+  if (startTime.hour === endTime.hour) {
+    return "終日";
+  }
+  return `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`;
 }

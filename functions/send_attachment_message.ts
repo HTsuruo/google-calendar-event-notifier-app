@@ -16,13 +16,17 @@ export const SendAttachmentMessageDefinition = DefineFunction({
         title: "Select a channel",
         description: "Search all channels",
       },
-      attachment: {
-        type: Schema.types.object,
+      attachments: {
+        type: Schema.types.array,
+        items: {
+          // TODO(tsuruoka): object型だとエラーになってしまうため、仕方なくstring型にしてJSON文字列を格納している
+          type: Schema.types.string,
+        },
         title: "Select a channel",
         description: "Search all channels",
       },
     },
-    required: ["channel_id", "attachment"],
+    required: ["channel_id", "attachments"],
   },
   output_parameters: {
     properties: {},
@@ -33,16 +37,13 @@ export const SendAttachmentMessageDefinition = DefineFunction({
 export default SlackFunction(
   SendAttachmentMessageDefinition,
   async ({ inputs, client }) => {
-    const { channel_id, text, attachment } = inputs;
+    const { channel_id, text, attachments } = inputs;
     logger.info(`channel_id: ${channel_id}`);
     const chatResponse = await client.chat.postMessage(
       {
         channel: channel_id,
         text: text,
-        attachments: [
-          attachment,
-          attachment,
-        ],
+        attachments: attachments.map((attachment) => JSON.parse(attachment)),
       },
     );
     return {
@@ -55,7 +56,7 @@ export default SlackFunction(
 
 export type Attachment = {
   readonly color: string;
-  readonly pretext: string;
+  readonly text: string;
   readonly title: string;
   readonly title_link: string;
 };
