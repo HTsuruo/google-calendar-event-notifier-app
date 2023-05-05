@@ -4,11 +4,10 @@ import { SendAttachmentMessageDefinition } from "../functions/send_attachment_me
 
 const Workflow = DefineWorkflow({
   callback_id: "workflow",
-  title: "Send a greeting",
-  description: "Send a greeting to channel",
+  title: "Google Calendar Events Workflow",
 });
 
-const functionStep = Workflow.addStep(
+const dailyEventStep = Workflow.addStep(
   FetchCalendarEventsDefinition,
   {
     googleAccessTokenId: {
@@ -20,9 +19,9 @@ const functionStep = Workflow.addStep(
 Workflow.addStep(
   SendAttachmentMessageDefinition,
   {
-    channel_id: functionStep.outputs.channel_id,
-    text: functionStep.outputs.text,
-    attachments: functionStep.outputs.attachments,
+    channel_id: dailyEventStep.outputs.channel_id,
+    text: dailyEventStep.outputs.text,
+    attachments: dailyEventStep.outputs.attachments,
   },
 );
 

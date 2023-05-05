@@ -1,5 +1,6 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import * as logger from "logger";
+
 export const SendAttachmentMessageDefinition = DefineFunction({
   callback_id: "send_attachment_message",
   title: "Send attachment message",

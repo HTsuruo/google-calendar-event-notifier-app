@@ -3,6 +3,7 @@ import type { Event, Events } from "google-calendar-api";
 import { Attachment } from "./type.ts";
 import * as logger from "logger";
 import { formatEventDate, getTodayStartAndEnd } from "./util/date_util.ts";
+
 export const FetchCalendarEventsDefinition = DefineFunction({
   callback_id: "fetch_calendar_events",
   title: "Fetch calendar events",
