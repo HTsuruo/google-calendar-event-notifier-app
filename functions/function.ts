@@ -2,6 +2,7 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import type { Event, Events } from "google-calendar-api";
 import { datetime } from "ptera/mod.ts";
 import * as logger from "logger";
+import { Attachment } from "./send_attachment_message.ts";
 export const FunctionDefinition = DefineFunction({
   callback_id: "function",
   title: "Generate a greeting",
@@ -22,12 +23,12 @@ export const FunctionDefinition = DefineFunction({
         type: Schema.types.string,
         description: "Slack channel id to send outputs",
       },
-      message: {
-        type: Schema.types.string,
+      attachment: {
+        type: Schema.types.object,
         description: "Greeting for the recipient",
       },
     },
-    required: ["channel_id"],
+    required: ["channel_id", "attachment"],
   },
 });
 
@@ -46,14 +47,14 @@ export default SlackFunction(
     logger.info(`externalToken: ${externalToken}`);
 
     const calendarId = env.CALENDAR_ID;
-    const wholeToday = getTodayStartAndEnd();
+    const today = getTodayStartAndEnd();
     let events: Event[] | undefined;
     try {
       // Slack platform側で既にOAuthの認証が済んでおり、アクセストークンを取得できているのでライブラリではなくfetchを使う
       // クライアントライブラリでは、GoogleAuthによる認証が必要となるため。
       // ref. https://developers.google.com/calendar/api/v3/reference/events/list?hl=ja
       const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${wholeToday.start}&timeMax=${wholeToday.end}`,
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${today.start.toISOString()}&timeMax=${today.end.toISOString()}`,
         {
           method: "GET",
           headers: {
@@ -81,6 +82,12 @@ export default SlackFunction(
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
         message: events?.at(0)?.summary ?? "",
+        attachment: {
+          color: "#000",
+          pretext: "これはプレテキストです",
+          title: "タイトルです",
+          title_link: "https://api.slack.com/lang/ja-jp",
+        } as Attachment,
       },
     };
   },
