@@ -1,5 +1,5 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { Events } from "google-calendar-api";
+import type { Event, Events } from "google-calendar-api";
 import { datetime } from "ptera/mod.ts";
 export const FunctionDefinition = DefineFunction({
   callback_id: "function",
@@ -56,7 +56,7 @@ export default SlackFunction(
     );
     console.log(`timeMin: ${today.toJSDate().toISOString()}`);
     console.log(`timeMax: ${today.add({ day: 1 }).toJSDate().toISOString()}`);
-    let events: import("https://googleapis.deno.dev/v1/calendar:v3").Event[];
+    let events: Event[] | undefined;
     try {
       const res = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${"2023-05-05T00:00:00Z"}&timeMax=${"2023-05-06T00:00:00Z"}`,
@@ -77,9 +77,8 @@ export default SlackFunction(
         return { error: res.statusText };
       }
       const json: Events = await res.json();
-      console.log(`json: ${JSON.stringify(json)}`);
       console.log(`items: ${JSON.stringify(json.items)}`);
-      events = json.items!;
+      events = json.items;
     } catch (error) {
       console.error(error);
       return { error };
@@ -87,7 +86,7 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        message: events.at(0)?.summary ?? "No events",
+        message: events?.at(0)?.summary ?? "No events",
       },
     };
   },
