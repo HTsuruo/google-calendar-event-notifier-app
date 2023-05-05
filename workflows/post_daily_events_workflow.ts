@@ -4,7 +4,7 @@ import { SendAttachmentMessageDefinition } from "../functions/send_attachment_me
 
 const PostDailyEventsWorkflow = DefineWorkflow({
   callback_id: "post_daily_events_workflow",
-  title: "Google Calendar Events Workflow",
+  title: "[Workflow] Post daily events",
 });
 
 const dailyEventStep = PostDailyEventsWorkflow.addStep(
