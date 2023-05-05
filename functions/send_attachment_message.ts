@@ -11,6 +11,11 @@ export const SendAttachmentMessageDefinition = DefineFunction({
         title: "Select a channel",
         description: "Search all channels",
       },
+      text: {
+        type: Schema.types.string,
+        title: "Select a channel",
+        description: "Search all channels",
+      },
       attachment: {
         type: Schema.types.object,
         title: "Select a channel",
@@ -28,13 +33,14 @@ export const SendAttachmentMessageDefinition = DefineFunction({
 export default SlackFunction(
   SendAttachmentMessageDefinition,
   async ({ inputs, client }) => {
-    const { channel_id, attachment } = inputs;
+    const { channel_id, text, attachment } = inputs;
     logger.info(`channel_id: ${channel_id}`);
     const chatResponse = await client.chat.postMessage(
       {
         channel: channel_id,
-        text: "Hello, world!",
+        text: text,
         attachments: [
+          attachment,
           attachment,
         ],
       },

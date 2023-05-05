@@ -21,6 +21,7 @@ Workflow.addStep(
   SendAttachmentMessageDefinition,
   {
     channel_id: functionStep.outputs.channel_id,
+    text: functionStep.outputs.text,
     attachment: functionStep.outputs.attachment,
   },
 );

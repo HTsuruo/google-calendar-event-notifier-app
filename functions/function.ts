@@ -23,6 +23,10 @@ export const FunctionDefinition = DefineFunction({
         type: Schema.types.string,
         description: "Slack channel id to send outputs",
       },
+      text: {
+        type: Schema.types.string,
+        description: "Greeting for the recipient",
+      },
       attachment: {
         type: Schema.types.object,
         description: "Greeting for the recipient",
@@ -54,18 +58,17 @@ export default SlackFunction(
       // クライアントライブラリでは、GoogleAuthによる認証が必要となるため。
       // ref. https://developers.google.com/calendar/api/v3/reference/events/list?hl=ja
       const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${today.start.toISOString()}&timeMax=${today.end.toISOString()}`,
+        // GETではbodyにJSONを渡せないため、クエリパラメータで渡す
+        // Error: TypeError: Request with GET/HEAD method cannot have body.
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events` +
+          `?timeMin=${today.start.toISOString()}` +
+          `&timeMax=${today.end.toISOString()}`,
         {
           method: "GET",
           headers: {
             Authorization: `Bearer ${externalToken}`,
             "Content-Type": "application/json",
           },
-          // Error: TypeError: Request with GET/HEAD method cannot have body.
-          // body: JSON.stringify({
-          //   timeMax: today.toJSDate(),
-          //   timeMin: today.add({ day: 1 }).toJSDate(),
-          // } as EventsListOptions),
         },
       );
       if (!res.ok) {
@@ -81,7 +84,7 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        message: events?.at(0)?.summary ?? "",
+        text: events?.at(0)?.summary ?? "",
         attachment: {
           color: "#000",
           pretext: "これはプレテキストです",
