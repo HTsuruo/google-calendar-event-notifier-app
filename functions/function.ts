@@ -26,7 +26,7 @@ export const FunctionDefinition = DefineFunction({
         description: "Greeting for the recipient",
       },
     },
-    required: ["message"],
+    required: ["channel_id"],
   },
 });
 
@@ -86,7 +86,7 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        message: events?.at(0)?.summary ?? "No events",
+        message: events?.at(0)?.summary ?? "",
       },
     };
   },
