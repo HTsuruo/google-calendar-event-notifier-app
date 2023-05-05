@@ -46,23 +46,14 @@ export default SlackFunction(
     console.log(`externalToken: ${externalToken}`);
 
     const calendarId = env.CALENDAR_ID;
-    const now = datetime();
-    const today = datetime(
-      {
-        year: now.year,
-        month: now.month,
-        day: now.day,
-      },
-    );
-    console.log(`timeMin: ${today.toJSDate().toISOString()}`);
-    console.log(`timeMax: ${today.add({ day: 1 }).toJSDate().toISOString()}`);
+    const wholeToday = getTodayStartAndEnd();
     let events: Event[] | undefined;
     try {
       // Slack platform側で既にOAuthの認証が済んでおり、アクセストークンを取得できているのでライブラリではなくfetchを使う
-      // クライアントライブラリでは、GoogleAuthによる認証が必要となるため
+      // クライアントライブラリでは、GoogleAuthによる認証が必要となるため。
       // ref. https://developers.google.com/calendar/api/v3/reference/events/list?hl=ja
       const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${"2023-05-05T00:00:00Z"}&timeMax=${"2023-05-06T00:00:00Z"}`,
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${wholeToday.start}&timeMax=${wholeToday.end}`,
         {
           method: "GET",
           headers: {
@@ -94,3 +85,22 @@ export default SlackFunction(
     };
   },
 );
+
+// 今日の0時と24時を取得する
+function getTodayStartAndEnd(): { start: Date; end: Date } {
+  const now = datetime();
+  const today = datetime(
+    {
+      year: now.year,
+      month: now.month,
+      day: now.day,
+    },
+  );
+  const afterDay = today.add({ day: 1 });
+  const wholeToday = {
+    start: today.toJSDate(),
+    end: afterDay.toJSDate(),
+  };
+  console.log(`today: ${JSON.stringify(wholeToday)}`);
+  return wholeToday;
+}
