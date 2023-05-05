@@ -58,6 +58,9 @@ export default SlackFunction(
     console.log(`timeMax: ${today.add({ day: 1 }).toJSDate().toISOString()}`);
     let events: Event[] | undefined;
     try {
+      // Slack platform側で既にOAuthの認証が済んでおり、アクセストークンを取得できているのでライブラリではなくfetchを使う
+      // クライアントライブラリでは、GoogleAuthによる認証が必要となるため
+      // ref. https://developers.google.com/calendar/api/v3/reference/events/list?hl=ja
       const res = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${"2023-05-05T00:00:00Z"}&timeMax=${"2023-05-06T00:00:00Z"}`,
         {
