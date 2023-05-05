@@ -1,6 +1,6 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import type { Event, Events } from "google-calendar-api";
-import { Attachment } from "./send_attachment_message.ts";
+import { Attachment } from "./type.ts";
 import * as logger from "logger";
 import { formatEventDate, getTodayStartAndEnd } from "./util/date_util.ts";
 export const FetchCalendarEventsDefinition = DefineFunction({
