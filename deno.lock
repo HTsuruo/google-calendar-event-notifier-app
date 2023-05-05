@@ -485,6 +485,7 @@
     "https://googleapis.deno.dev/_/base@v1/auth/mod.ts": "2564c92422e18c3e714ad829af89ac3c28ae3021c7230fcb6ca3a46edf7efe25",
     "https://googleapis.deno.dev/_/base@v1/mod.ts": "47e055b8ac7e60451fe6909e7bec3a468069f207737d30b811e236573f1b7da2",
     "https://googleapis.deno.dev/_/base@v1/util.ts": "255693bf0ffbcaa62b4a20f87057254ed439f32cc50084e01c6fd760c1ddf2ab",
+    "https://googleapis.deno.dev/v1/calendar:v3": "b57bec8850ff5b0d743dbaad2bf81d8f96956e66af07cd193e2574dbc3b98841",
     "https://googleapis.deno.dev/v1/calendar:v3.ts": "8a14517d7fcbf8de5cc4e1b8bb74535fb597cf84bbd031ef90188d93b2966e4d"
   }
 }

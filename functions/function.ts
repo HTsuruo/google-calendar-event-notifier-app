@@ -1,5 +1,5 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { Calendar } from "https://googleapis.deno.dev/v1/calendar:v3.ts";
+import { Events } from "https://googleapis.deno.dev/v1/calendar:v3.ts";
 import { datetime } from "https://deno.land/x/ptera@v1.0.2/mod.ts";
 export const FunctionDefinition = DefineFunction({
   callback_id: "function",
@@ -17,6 +17,10 @@ export const FunctionDefinition = DefineFunction({
   },
   output_parameters: {
     properties: {
+      channel_id: {
+        type: Schema.types.string,
+        description: "Slack channel id to send outputs",
+      },
       message: {
         type: Schema.types.string,
         description: "Greeting for the recipient",
@@ -28,7 +32,7 @@ export const FunctionDefinition = DefineFunction({
 
 export default SlackFunction(
   FunctionDefinition,
-  async ({ inputs, client }) => {
+  async ({ inputs, client, env }) => {
     const tokenResponse = await client.apps.auth.external.get({
       external_token_id: inputs.googleAccessTokenId,
     });
@@ -41,10 +45,7 @@ export default SlackFunction(
     const externalToken = tokenResponse.external_token;
     console.log(`externalToken: ${externalToken}`);
 
-    const calendar = new Calendar();
-
-    const calendarId =
-      "nttdocomo.com_02men4phbni9jtk15ndgp1udi8@group.calendar.google.com";
+    const calendarId = env.CALENDAR_ID;
     const now = datetime();
     const today = datetime(
       {
@@ -53,29 +54,40 @@ export default SlackFunction(
         day: now.day,
       },
     );
-    const events = await calendar.eventsList(calendarId, {
-      timeMax: today.toJSDate(),
-      timeMin: today.add({ day: 1 }).toJSDate(),
-    });
-    console.log(`events: ${JSON.stringify(events)}`);
-
-    // ref. https://developers.google.com/calendar/api/v3/reference
-    // const calendarId = "primary";
-    // const res = fetch(
-    //   `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/acl`,
-    // );
-
-    // const client = await authenticate({
-    //   // ref. https://developers.google.com/identity/protocols/oauth2/scopes?hl=ja#calendar
-    //   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
-    //   keyfilePath:
-    // });
-    // if (client.credentials) {
-    //   console.info(client.credentials);
-    // }
+    console.log(`timeMin: ${today.toJSDate().toISOString()}`);
+    console.log(`timeMax: ${today.add({ day: 1 }).toJSDate().toISOString()}`);
+    let events: import("https://googleapis.deno.dev/v1/calendar:v3").Event[];
+    try {
+      const res = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${"2023-05-05T00:00:00Z"}&timeMax=${"2023-05-06T00:00:00Z"}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${externalToken}`,
+            "Content-Type": "application/json",
+          },
+          // Error: TypeError: Request with GET/HEAD method cannot have body.
+          // body: JSON.stringify({
+          //   timeMax: today.toJSDate(),
+          //   timeMin: today.add({ day: 1 }).toJSDate(),
+          // } as EventsListOptions),
+        },
+      );
+      if (!res.ok) {
+        return { error: res.statusText };
+      }
+      const json: Events = await res.json();
+      console.log(`json: ${JSON.stringify(json)}`);
+      console.log(`items: ${JSON.stringify(json.items)}`);
+      events = json.items!;
+    } catch (error) {
+      console.error(error);
+      return { error };
+    }
     return {
       outputs: {
-        message: `ありがとうございました`,
+        channel_id: env.SLACK_CHANNEL_ID,
+        message: events.at(0)?.summary ?? "No events",
       },
     };
   },

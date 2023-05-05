@@ -20,7 +20,7 @@ const functionStep = Workflow.addStep(
 // ref. https://api.slack.com/automation/functions
 // `Schema.slack.functions`に関数が定義されており`addStep`だけで利用できる。
 Workflow.addStep(Schema.slack.functions.SendMessage, {
-  channel_id: "C02SV0FPLGP",
+  channel_id: functionStep.outputs.channel_id,
   message: functionStep.outputs.message,
 });
 
