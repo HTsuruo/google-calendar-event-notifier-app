@@ -8,7 +8,7 @@ import PostTodayEventsWorkflow from "../workflows/post_today_events_workflow.ts"
  * https://api.slack.com/future/triggers
  */
 const trigger: Trigger<typeof PostTodayEventsWorkflow.definition> = {
-  type: "shortcut",
+  type: "webhook",
   name: "Post daily events at 9:00 AM",
   workflow: `#/workflows/${PostTodayEventsWorkflow.definition.callback_id}`,
 };
