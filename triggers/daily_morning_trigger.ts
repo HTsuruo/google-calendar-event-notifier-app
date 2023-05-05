@@ -1,5 +1,5 @@
 import { Trigger } from "deno-slack-sdk/types.ts";
-import PostDailyEventsWorkflow from "../workflows/post_daily_events_workflow.ts";
+import PostTodayEventsWorkflow from "../workflows/post_today_events_workflow.ts";
 
 /**
  * Triggers determine when workflows are executed. A trigger
@@ -7,11 +7,10 @@ import PostDailyEventsWorkflow from "../workflows/post_daily_events_workflow.ts"
  * such as a user pressing a button or when a specific event occurs.
  * https://api.slack.com/future/triggers
  */
-const trigger: Trigger<typeof PostDailyEventsWorkflow.definition> = {
+const trigger: Trigger<typeof PostTodayEventsWorkflow.definition> = {
   type: "shortcut",
-  name: "Send a greeting",
-  description: "Send greeting to channel",
-  workflow: "#/workflows/post_daily_events_workflow",
+  name: "Post daily events at 9:00 AM",
+  workflow: "#/workflows/post_today_events_workflow",
 };
 
 export default trigger;

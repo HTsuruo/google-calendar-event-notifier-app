@@ -2,12 +2,12 @@ import { DefineWorkflow } from "deno-slack-sdk/mod.ts";
 import { TodayCalendarEventsDefinition } from "../functions/today_calendar_events_function.ts";
 import { SendAttachmentMessageDefinition } from "../functions/send_attachment_message_function.ts";
 
-const PostDailyEventsWorkflow = DefineWorkflow({
-  callback_id: "post_daily_events_workflow",
+const PostTodayEventsWorkflow = DefineWorkflow({
+  callback_id: "post_today_events_workflow",
   title: "[Workflow] Post daily events",
 });
 
-const dailyEventStep = PostDailyEventsWorkflow.addStep(
+const dailyEventStep = PostTodayEventsWorkflow.addStep(
   TodayCalendarEventsDefinition,
   {
     googleAccessTokenId: {
@@ -16,7 +16,7 @@ const dailyEventStep = PostDailyEventsWorkflow.addStep(
   },
 );
 
-PostDailyEventsWorkflow.addStep(
+PostTodayEventsWorkflow.addStep(
   SendAttachmentMessageDefinition,
   {
     channel_id: dailyEventStep.outputs.channel_id,
@@ -35,4 +35,4 @@ PostDailyEventsWorkflow.addStep(
 //   message: functionStep.outputs.message,
 // });
 
-export default PostDailyEventsWorkflow;
+export default PostTodayEventsWorkflow;
