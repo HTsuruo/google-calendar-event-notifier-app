@@ -1,5 +1,5 @@
 import { DefineWorkflow } from "deno-slack-sdk/mod.ts";
-import { FetchTodayEventsDefinition } from "../functions/fetch_today_calendar_events.ts";
+import { TodayCalendarEventsDefinition } from "../functions/today_calendar_events.ts";
 import { SendAttachmentMessageDefinition } from "../functions/send_attachment_message.ts";
 
 const Workflow = DefineWorkflow({
@@ -8,7 +8,7 @@ const Workflow = DefineWorkflow({
 });
 
 const dailyEventStep = Workflow.addStep(
-  FetchTodayEventsDefinition,
+  TodayCalendarEventsDefinition,
   {
     googleAccessTokenId: {
       credential_source: "DEVELOPER",
