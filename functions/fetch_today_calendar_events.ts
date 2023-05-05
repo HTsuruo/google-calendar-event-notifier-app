@@ -4,10 +4,10 @@ import { Attachment } from "./type.ts";
 import * as logger from "logger";
 import { formatEventDate, getTodayStartAndEnd } from "./util/date_util.ts";
 
-export const FetchCalendarEventsDefinition = DefineFunction({
-  callback_id: "fetch_calendar_events",
-  title: "Fetch calendar events",
-  source_file: "functions/fetch_calendar_events.ts",
+export const FetchTodayEventsDefinition = DefineFunction({
+  callback_id: "fetch_today_calendar_events",
+  title: "Fetch today calendar events",
+  source_file: "functions/fetch_today_calendar_events.ts",
   input_parameters: {
     properties: {
       googleAccessTokenId: {
@@ -37,7 +37,7 @@ export const FetchCalendarEventsDefinition = DefineFunction({
 });
 
 export default SlackFunction(
-  FetchCalendarEventsDefinition,
+  FetchTodayEventsDefinition,
   async ({ inputs, client, env }) => {
     const tokenResponse = await client.apps.auth.external.get({
       external_token_id: inputs.googleAccessTokenId,
