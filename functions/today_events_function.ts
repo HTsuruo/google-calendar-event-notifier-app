@@ -1,8 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import type { Event, Events } from "google-calendar-api";
-import * as logger from "logger";
 import { getTodayStartAndEnd } from "./util.ts";
 import { makeEventAttachment } from "./util.ts";
+import { fetchCalendarEvents } from "./google_calendar_api.ts";
 
 const callback_id = "today_events_function";
 
@@ -45,49 +44,29 @@ export default SlackFunction(
       external_token_id: inputs.googleAccessTokenId,
     });
     if (tokenResponse.error) {
-      const error =
-        `Failed to retrieve the external auth token due to [${tokenResponse.error}]`;
-      return { error };
+      throw new Error(
+        "Failed to retrieve the external auth token due to [${tokenResponse.error}]",
+      );
     }
     const externalToken = tokenResponse.external_token;
-    logger.info(`externalToken: ${externalToken}`);
-
-    const calendarId = env.CALENDAR_ID;
-    const today = getTodayStartAndEnd();
-    let events: Event[] | undefined;
-    try {
-      // Slack platform側で既にOAuthの認証が済んでおり、アクセストークンを取得できているのでライブラリではなくfetchを使う
-      // クライアントライブラリでは、GoogleAuthによる認証が必要となるため。
-      // ref. https://developers.google.com/calendar/api/v3/reference/events/list?hl=ja
-      const res = await fetch(
-        // GETではbodyにJSONを渡せないため、クエリパラメータで渡す
-        // Error: TypeError: Request with GET/HEAD method cannot have body.
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events` +
-          `?timeMin=${today.start.toISOString()}` +
-          `&timeMax=${today.end.toISOString()}` +
-          `&singleEvents=true` +
-          `&orderBy=startTime`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${externalToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      if (!res.ok) {
-        return { error: res.statusText };
-      }
-      const json: Events = await res.json();
-      events = json.items;
-    } catch (error) {
-      logger.error(error);
-      return { error };
+    if (!externalToken) {
+      throw new Error("Cannot get externalToken");
     }
+
+    const { start, end } = getTodayStartAndEnd();
+    const events = await fetchCalendarEvents(
+      {
+        externalToken,
+        calendarId: env.CALENDAR_ID,
+        timeMin: start,
+        timeMax: end,
+      },
+    );
+
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        text: `There is ${events?.length} event today`,
+        text: `本日は ${events?.length} 件のイベントがあります`,
         attachments: events?.map((
           event,
         ) =>
