@@ -1,5 +1,9 @@
 # Google Calendar Event Notifier App
 
+| DailyEvents | UpcomingEvents |
+|--------|--------|
+| <img width="231" alt="SCR-20230506-tpht-2" src="https://user-images.githubusercontent.com/12729025/236627901-f526ed0b-146f-49a7-89ca-b199b91c7424.png"> | <img width="231" alt="SCR-20230506-tpve-2" src="https://user-images.githubusercontent.com/12729025/236627883-889fe37f-ad97-4c18-9502-bb5b108a0a02.png"> |
+
 これはnew Slack platformとGoogle Calendar APIを利用し、カレンダーイベントを取得しSlackチャンネルに通知するSlackアプリです。
 
 元々、チームの共有カレンダーをSlackの任意チャンネルに通知するアプリとして[Slack 向け Google Calendar for Team Events](https://slack.com/intl/ja-jp/help/articles/360047938054-Slack-%E5%90%91%E3%81%91-Google-Calendar-for-Team-Events)が存在していましたが、近々廃止予定のため、new Slack platformで代替アプリとして作ってみたのが背景です。ちなみに、上記アプリを既にインストールしている場合はそのまま使えますが、新規での追加はできません（いずれにしてもメンテナンス外なので利用は非推奨）。
