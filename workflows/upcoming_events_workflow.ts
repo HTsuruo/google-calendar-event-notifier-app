@@ -21,6 +21,7 @@ UpcominigEventsWorkflow.addStep(
   {
     channel_id: eventStep.outputs.channel_id,
     text: eventStep.outputs.text,
+    skip_send_message: eventStep.outputs.skip_send_message,
     attachments: eventStep.outputs.attachments,
   },
 );
