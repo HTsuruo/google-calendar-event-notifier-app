@@ -1,5 +1,6 @@
 import { DefineOAuth2Provider, Manifest, Schema } from "deno-slack-sdk/mod.ts";
 import PostTodayEventsWorkflow from "./workflows/post_today_events_workflow.ts";
+import UpcominigEventsWorkflow from "./workflows/upcoming_events_workflow.ts";
 
 const GoogleProvider = DefineOAuth2Provider({
   provider_key: "google",
@@ -36,7 +37,7 @@ export default Manifest({
   description:
     "A alternative Google Calendar for Team Events. This app notifies Google Calendar events to Slack channel.",
   icon: "assets/default_new_app_icon.png",
-  workflows: [PostTodayEventsWorkflow],
+  workflows: [PostTodayEventsWorkflow, UpcominigEventsWorkflow],
   externalAuthProviders: [GoogleProvider],
   outgoingDomains: [
     "googleapis.deno.dev",

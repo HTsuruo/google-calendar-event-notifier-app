@@ -86,7 +86,7 @@ export default SlackFunction(
         text: `${triggerMinutes}分後にイベントが開始します`,
         attachments: events?.map((
           event,
-        ) => JSON.stringify(makeEventAttachment(event))),
+        ) => JSON.stringify(makeEventAttachment({ event, color: "#FF82B2" }))),
       },
     };
   },

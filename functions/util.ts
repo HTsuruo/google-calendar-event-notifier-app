@@ -46,7 +46,10 @@ export function getNowAndUpcomingMinutes(
 }
 
 // Calendar EventをもとにSlackのAttachmentを作成する
-export function makeEventAttachment(event: Event): Attachment {
+export function makeEventAttachment(
+  param: { event: Event; color: string },
+): Attachment {
+  const { event, color } = param;
   let text = formatEventDate(event);
   if (event.description) {
     text += `\n${event.description}`;
@@ -55,7 +58,7 @@ export function makeEventAttachment(event: Event): Attachment {
     text += `\n${event.location}`;
   }
   return {
-    color: "#3A6FE1",
+    color: color,
     title: event.summary,
     title_link: event.htmlLink,
     text: text,

@@ -90,7 +90,11 @@ export default SlackFunction(
         text: `There is ${events?.length} event today`,
         attachments: events?.map((
           event,
-        ) => JSON.stringify(makeEventAttachment(event))),
+        ) =>
+          JSON.stringify(
+            makeEventAttachment({ event, color: "#3A6FE1" }),
+          )
+        ),
       },
     };
   },

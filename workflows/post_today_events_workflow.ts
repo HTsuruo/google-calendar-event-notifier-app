@@ -7,7 +7,7 @@ const PostTodayEventsWorkflow = DefineWorkflow({
   title: "[Workflow] Post daily events",
 });
 
-const dailyEventStep = PostTodayEventsWorkflow.addStep(
+const eventStep = PostTodayEventsWorkflow.addStep(
   TodayEventsDefinition,
   {
     googleAccessTokenId: {
@@ -19,9 +19,9 @@ const dailyEventStep = PostTodayEventsWorkflow.addStep(
 PostTodayEventsWorkflow.addStep(
   SendAttachmentMessageDefinition,
   {
-    channel_id: dailyEventStep.outputs.channel_id,
-    text: dailyEventStep.outputs.text,
-    attachments: dailyEventStep.outputs.attachments,
+    channel_id: eventStep.outputs.channel_id,
+    text: eventStep.outputs.text,
+    attachments: eventStep.outputs.attachments,
   },
 );
 
