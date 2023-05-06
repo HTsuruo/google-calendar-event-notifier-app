@@ -1,174 +1,96 @@
-# Deno Hello World Slack App
+# Google Calendar Event Notifier App
 
-This sample app demonstrates how to use a function, workflow, and trigger to
-send a greeting to channel.
+これはnew Slack platformとGoogle Calendar APIを利用し、カレンダーイベントを取得しSlackチャンネルに通知するSlackアプリです。
 
-**Guide Outline**:
+元々、チームの共有カレンダーをSlackの任意チャンネルに通知するアプリとして[Slack 向け Google Calendar for Team Events](https://slack.com/intl/ja-jp/help/articles/360047938054-Slack-%E5%90%91%E3%81%91-Google-Calendar-for-Team-Events)が存在していましたが、近々廃止予定のため、new Slack platformで代替アプリとして作ってみたのが背景です。ちなみに、上記アプリを既にインストールしている場合はそのまま使えますが、新規での追加はできません（いずれにしてもメンテナンス外なので利用は非推奨）。
 
-- [Setup](#setup)
-  - [Install the Slack CLI](#install-the-slack-cli)
-  - [Clone the Template](#clone-the-template)
-- [Create a Link Trigger](#create-a-link-trigger)
-- [Running Your Project Locally](#running-your-project-locally)
-- [Testing](#testing)
-- [Deploying Your App](#deploying-your-app)
-  - [Viewing Activity Logs](#viewing-activity-logs)
-- [Project Structure](#project-structure)
-- [Resources](#resources)
+**Features**:
+
+本レポジトリの機能は2点です。
+
+- **特定の時間（デフォルト 9:00 AM）に1日のイベントのサマリーを特定チャンネルに通知する**
+  - `today_events_function.ts`
+  - Scheduled Triggerを利用して平日の午前9:00に毎日発火する
+- **イベントの開始直前（デフォルト 15分前）にイベントを特定チャンネルに通知する**
+  - new Slack PlatformのScheduled Triggerは、最も短くて1時間単位のためバッチでの処理はできない
+  - 代わりにWebhook Triggerがあるので、[IFTTT](https://ifttt.com/)や[Zapier](https://zapier.com/)、[Cloud Schedular](https://cloud.google.com/scheduler?hl=ja)などを使って外部で15分クローンを作成しWebhookとして叩くのが現実的です
+    - ちなみにIFTTTやZapierを使えば15分前きっちりに通知の受信およびイベント取得ができるらしいので、カレンダー内容を上記のSaaSに渡しても問題ないポリシーであれば利用すると楽に済みます。
 
 ---
 
 ## Setup
 
-Before getting started, make sure you have a development workspace where you
-have permissions to install apps. If you don’t have one set up, go ahead and
-[create one](https://slack.com/create). Also, please note that the workspace
-requires any of [the Slack paid plans](https://slack.com/pricing).
+- Set up Slack CLI
+  - ref. [Quickstart guide for modular Slack apps | Slack](https://api.slack.com/automation/quickstart)
+- Google Cloud にて OAuthウェブクライアントを作成する
+  - ref. https://support.google.com/workspacemigrate/answer/9222992?hl=ja
 
-### Install the Slack CLI
+## Env
 
-To use this sample, you first need to install and configure the Slack CLI.
-Step-by-step instructions can be found in our
-[Quickstart Guide](https://api.slack.com/future/quickstart).
-
-### Clone the Sample
-
-Start by cloning this repository:
-
-```zsh
-# Clone this project onto your machine
-$ slack create my-app -t slack-samples/deno-hello-world
-
-# Change into this project directory
-$ cd my-app
+```sh
+❯ slack --version
+Using slack v2.1.0
 ```
 
-## Create a Link Trigger
+## Local Development
 
-[Triggers](https://api.slack.com/future/triggers) are what cause workflows to
-run. These triggers can be invoked by a user, or automatically as a response to
-an event within Slack.
+### Create `.env` on root directory
 
-A [link trigger](https://api.slack.com/future/triggers/link) is a type of
-trigger that generates a **Shortcut URL** which, when posted in a channel or
-added as a bookmark, becomes a link. When clicked, the link trigger will run the
-associated workflow.
+- Local Developmentでは`.env`を自動で読み込んでくれるので特別なセットアップは不要（デプロイ時には`add`が必要）
+- ref. [Environment variables | Slack](https://api.slack.com/automation/environment-variables)
 
-Link triggers are _unique to each installed version of your app_. This means
-that Shortcut URLs will be different across each workspace, as well as between
-[locally run](#running-your-project-locally) and
-[deployed apps](#deploying-your-app). When creating a trigger, you must select
-the Workspace that you'd like to create the trigger in. Each Workspace has a
-development version (denoted by `(local)`), as well as a deployed version.
+```sh
+❯ touch .env
 
-To create a link trigger for the workflow in this sample, run the following
-command:
-
-```zsh
-$ slack trigger create --trigger-def triggers/greeting_trigger.ts
+# CALENDAR_ID="[YOUR_CALENDAR_ID]"
+# SLACK_CHANNEL_ID="[YOUR_POST_CHANNEL]"
 ```
 
-After selecting a Workspace, the output provided will include the link trigger
-Shortcut URL. Copy and paste this URL into a channel as a message, or add it as
-a bookmark in a channel of the Workspace you selected.
+### Replace `client_id` in `manifest.ts`
 
-**Note: this link won't run the workflow until the app is either running locally
-or deployed!** Read on to learn how to run your app locally and eventually
-deploy it to Slack hosting.
+https://github.com/HTsuruo/google-calendar-event-notifier-app/blob/c5f73c9b11e87659108631596647ec9aa5f12fac/manifest.ts#L12
 
-## Running Your Project Locally
+### Store OAuth secret key to Slack platform
 
-While building your app, you can see your changes propagated to your workspace
-in real-time with `slack run`. In both the CLI and in Slack, you'll know an app
-is the development version if the name has the string `(local)` appended.
+- Slackプラットフォームに保存することで露呈することなくセキュアに取り扱うことができる
+  - OAuthの認証もプラットフォーム側で完結するので、一度認証を済ませればアクセストークンが取得できた状態で開発できる
+  - ref. https://api.slack.com/automation/external-auth#client-secret
 
-```zsh
-# Run app locally
-$ slack run
-
-Connected, awaiting events
+```sh
+❯ slack external-auth add-secret --provider google --secret "GOCSPX-abc123..."
+❯ slack external-auth add
 ```
 
-Once running, click the
-[previously created Shortcut URL](#create-a-link-trigger) associated with the
-`(local)` version of your app. This should start the included sample workflow.
+### Crate Trigger
 
-To stop running locally, press `<CTRL> + C` to end the process.
+```sh
+# 本日のイベントを全て通知する用トリガー
+❯ slack trigger create --trigger-def triggers/daily_morining_trigger.ts
 
-## Testing
-
-For an example of how to test a function, see
-`functions/greeting_function_test.ts`. Test filenames should be suffixed with
-`_test`.
-
-Run all tests with `deno test`:
-
-```zsh
-$ deno test
+# イベントの開始直前に通知される用のトリガー
+❯ slack trigger create --trigger-def triggers/upcoming_minutes_trigger.ts
 ```
 
-## Deploying Your App
+### How to Run
 
-Once you're done with development, you can deploy the production version of your
-app to Slack hosting using `slack deploy`:
-
-```zsh
-$ slack deploy
+```sh
+❯ slack run
 ```
 
-After deploying, [create a new link trigger](#create-a-link-trigger) for the
-production version of your app (not appended with `(local)`). Once the trigger
-is invoked, the workflow should run just as it did in when developing locally.
+## Deploy Setup
 
-### Viewing Activity Logs
+```sh
+# 環境変数をSlackプラットフォームに設定する（.envはデプロイ環境では読み込まれない）
+❯ slack env add MY_ENV_VAR "asdf-1234"`
 
-Activity logs for the production instance of your application can be viewed with
-the `slack activity` command:
+# デプロイ環境でも同様にシークレットキーを保存する（環境ごとに設定が必要）
+❯ slack external-auth add-secret --provider google --secret "GOCSPX-abc123..."
+❯ slack external-auth add
 
-```zsh
-$ slack activity
+# トリガーの設定も環境ごとに必要
+❯ slack trigger create --trigger-def triggers/daily_morining_trigger.ts
+❯ slack trigger create --trigger-def triggers/upcoming_minutes_trigger.ts
+
+# デプロイ
+❯ slack deploy
 ```
-
-## Project Structure
-
-### `manifest.ts`
-
-The [app manifest](https://api.slack.com/future/manifest) contains the app's
-configuration. This file defines attributes like app name and description.
-
-### `slack.json`
-
-Used by the CLI to interact with the project's SDK dependencies. It contains
-script hooks that are executed by the CLI and implemented by the SDK.
-
-### `/functions`
-
-[Functions](https://api.slack.com/future/functions) are reusable building blocks
-of automation that accept inputs, perform calculations, and provide outputs.
-Functions can be used independently or as steps in workflows.
-
-### `/workflows`
-
-A [workflow](https://api.slack.com/future/workflows) is a set of steps that are
-executed in order. Each step in a workflow is a function.
-
-Workflows can be configured to run without user input or they can collect input
-by beginning with a [form](https://api.slack.com/future/forms) before continuing
-to the next step.
-
-### `/triggers`
-
-[Triggers](https://api.slack.com/future/triggers) determine when workflows are
-executed. A trigger file describes a scenario in which a workflow should be run,
-such as a user pressing a button or when a specific event occurs.
-
-## Resources
-
-To learn more about developing with the CLI, you can visit the following guides:
-
-- [Creating a new app with the CLI](https://api.slack.com/future/create)
-- [Configuring your app](https://api.slack.com/future/manifest)
-- [Developing locally](https://api.slack.com/future/run)
-
-To view all documentation and guides available, visit the
-[Overview page](https://api.slack.com/future/overview).
