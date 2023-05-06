@@ -1,7 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { getNowAndUpcomingMinutes } from "./util.ts";
 import { makeEventAttachment } from "./util.ts";
 import { fetchCalendarEvents } from "./google_calendar_api.ts";
+import { datetime } from "https://deno.land/x/ptera@v1.0.2/datetime.ts";
 
 const callback_id = "upcoming_events_function";
 const minute = 15;
@@ -54,7 +54,12 @@ export default SlackFunction(
       throw new Error("Cannot get externalToken");
     }
 
-    const { start, end } = getNowAndUpcomingMinutes({ minute });
+    const now = datetime();
+    const afterMinutesFromNow = now.add({ minute });
+    const { start, end } = {
+      start: now.toJSDate(),
+      end: afterMinutesFromNow.toJSDate(),
+    };
     const events = await fetchCalendarEvents(
       {
         externalToken,
@@ -63,11 +68,24 @@ export default SlackFunction(
         timeMax: end,
       },
     );
+    const filteredEvents = events!.filter((e) => {
+      const startTime = datetime(e.start?.dateTime!);
+      const endTime = datetime(e.end?.dateTime!);
+
+      // 終日イベント判定
+      const isAllDayEvent = startTime.hour === endTime.hour &&
+        startTime.minute === endTime.minute &&
+        startTime.second === endTime.second;
+
+      // 単一イベントかつ開始時間のみが対象（15分おきに実行されるためイベント中も含まれてしまう問題の対処）
+      return !isAllDayEvent && startTime.isBetween(now, afterMinutesFromNow);
+    });
+
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
         text: `${minute}分後にイベントが開始します`,
-        attachments: events?.map((
+        attachments: filteredEvents?.map((
           event,
         ) => JSON.stringify(makeEventAttachment({ event, color: "#FF82B2" }))),
       },

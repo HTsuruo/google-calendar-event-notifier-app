@@ -13,33 +13,10 @@ export function getTodayStartAndEnd(): { start: Date; end: Date } {
       day: now.day,
     },
   );
-  const afterDay = today.add({ day: 1 });
+  const tommorow = today.add({ day: 1 });
   const startAndEnd = {
     start: today.toJSDate(),
-    end: afterDay.toJSDate(),
-  };
-  logger.info(Deno.inspect(startAndEnd, { compact: false }));
-  return startAndEnd;
-}
-
-// 現在時刻と対象としたい時刻の時間取得する
-export function getNowAndUpcomingMinutes(
-  param: { minute: number },
-): { start: Date; end: Date } {
-  const now = datetime();
-  const today = datetime(
-    {
-      year: now.year,
-      month: now.month,
-      day: now.day,
-      hour: now.hour,
-      minute: now.minute,
-    },
-  );
-  const afterMinutes = today.add({ minute: param.minute });
-  const startAndEnd = {
-    start: today.toJSDate(),
-    end: afterMinutes.toJSDate(),
+    end: tommorow.toJSDate(),
   };
   logger.info(Deno.inspect(startAndEnd, { compact: false }));
   return startAndEnd;
@@ -71,7 +48,7 @@ function formatEventDate(event: Event) {
   const endTime = datetime(event.end?.dateTime);
   // 終日イベントの場合は時刻を表示しなし
   // ex: `2023-01-01`表示となり時刻がのらないため、そこで判別する
-  if (startTime.hour === endTime.hour) {
+  if (startTime.hour === endTime.hour && startTime.minute === endTime.minute) {
     return "終日";
   }
   return `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`;
