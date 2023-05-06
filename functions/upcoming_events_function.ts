@@ -1,13 +1,16 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import type { Event, Events } from "google-calendar-api";
 import * as logger from "logger";
-import { getTodayStartAndEnd } from "./util.ts";
+import { getNowAndUpcomingMinutes } from "./util.ts";
 import { makeEventAttachment } from "./util.ts";
 
-export const TodayCalendarEventsDefinition = DefineFunction({
-  callback_id: "today_calendar_events",
-  title: "Fetch today calendar events",
-  source_file: "functions/today_calendar_events_function.ts",
+const callback_id = "upcoming_events_function";
+const triggerMinutes = 15;
+
+export const UpcomingEventsDefinition = DefineFunction({
+  callback_id: callback_id,
+  title: "Fetch upcoming calendar events",
+  source_file: `functions/${callback_id}.ts`,
   input_parameters: {
     properties: {
       googleAccessTokenId: {
@@ -37,7 +40,7 @@ export const TodayCalendarEventsDefinition = DefineFunction({
 });
 
 export default SlackFunction(
-  TodayCalendarEventsDefinition,
+  UpcomingEventsDefinition,
   async ({ inputs, client, env }) => {
     const tokenResponse = await client.apps.auth.external.get({
       external_token_id: inputs.googleAccessTokenId,
@@ -51,15 +54,10 @@ export default SlackFunction(
     logger.info(`externalToken: ${externalToken}`);
 
     const calendarId = env.CALENDAR_ID;
-    const today = getTodayStartAndEnd();
+    const today = getNowAndUpcomingMinutes({ minute: triggerMinutes });
     let events: Event[] | undefined;
     try {
-      // Slack platform側で既にOAuthの認証が済んでおり、アクセストークンを取得できているのでライブラリではなくfetchを使う
-      // クライアントライブラリでは、GoogleAuthによる認証が必要となるため。
-      // ref. https://developers.google.com/calendar/api/v3/reference/events/list?hl=ja
       const res = await fetch(
-        // GETではbodyにJSONを渡せないため、クエリパラメータで渡す
-        // Error: TypeError: Request with GET/HEAD method cannot have body.
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events` +
           `?timeMin=${today.start.toISOString()}` +
           `&timeMax=${today.end.toISOString()}` +
@@ -85,7 +83,7 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        text: `There is ${events?.length} event today`,
+        text: `${triggerMinutes}分後にイベントが開始します`,
         attachments: events?.map((
           event,
         ) => JSON.stringify(makeEventAttachment(event))),

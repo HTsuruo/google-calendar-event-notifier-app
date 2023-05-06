@@ -31,7 +31,8 @@ const GoogleProvider = DefineOAuth2Provider({
  * https://api.slack.com/future/manifest
  */
 export default Manifest({
-  name: "Google Calendar Event Notifier",
+  // name: must be less than 36 characters (failed_constraint)
+  name: "Google Calendar Event",
   description:
     "A alternative Google Calendar for Team Events. This app notifies Google Calendar events to Slack channel.",
   icon: "assets/default_new_app_icon.png",

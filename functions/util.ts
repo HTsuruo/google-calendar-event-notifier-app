@@ -18,19 +18,31 @@ export function getTodayStartAndEnd(): { start: Date; end: Date } {
     start: today.toJSDate(),
     end: afterDay.toJSDate(),
   };
-  logger.info(`today: ${Deno.inspect(startAndEnd, { compact: false })}`);
+  logger.info(Deno.inspect(startAndEnd, { compact: false }));
   return startAndEnd;
 }
 
-export function formatEventDate(event: Event) {
-  const startTime = datetime(event.start?.dateTime);
-  const endTime = datetime(event.end?.dateTime);
-  // 終日イベントの場合は時刻を表示しなし
-  // ex: `2023-01-01`表示となり時刻がのらないため、そこで判別する
-  if (startTime.hour === endTime.hour) {
-    return "終日";
-  }
-  return `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`;
+// 現在時刻と対象としたい時刻の時間取得する
+export function getNowAndUpcomingMinutes(
+  param: { minute: number },
+): { start: Date; end: Date } {
+  const now = datetime();
+  const today = datetime(
+    {
+      year: now.year,
+      month: now.month,
+      day: now.day,
+      hour: now.hour,
+      minute: now.minute,
+    },
+  );
+  const afterMinutes = today.add({ minute: param.minute });
+  const startAndEnd = {
+    start: today.toJSDate(),
+    end: afterMinutes.toJSDate(),
+  };
+  logger.info(Deno.inspect(startAndEnd, { compact: false }));
+  return startAndEnd;
 }
 
 // Calendar EventをもとにSlackのAttachmentを作成する
@@ -49,4 +61,15 @@ export function makeEventAttachment(event: Event): Attachment {
     text: text,
     footer: `Created by: ${event.creator?.email}`,
   } as Attachment;
+}
+
+function formatEventDate(event: Event) {
+  const startTime = datetime(event.start?.dateTime);
+  const endTime = datetime(event.end?.dateTime);
+  // 終日イベントの場合は時刻を表示しなし
+  // ex: `2023-01-01`表示となり時刻がのらないため、そこで判別する
+  if (startTime.hour === endTime.hour) {
+    return "終日";
+  }
+  return `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`;
 }
