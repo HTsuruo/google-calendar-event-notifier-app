@@ -13,6 +13,9 @@ export const SendAttachmentMessageDefinition = DefineFunction({
       text: {
         type: Schema.types.string,
       },
+      skip_send_message: {
+        type: Schema.types.boolean,
+      },
       attachments: {
         type: Schema.types.array,
         items: {
@@ -32,8 +35,16 @@ export const SendAttachmentMessageDefinition = DefineFunction({
 export default SlackFunction(
   SendAttachmentMessageDefinition,
   async ({ inputs, client }) => {
-    const { channel_id, text, attachments } = inputs;
+    const { channel_id, skip_send_message, text, attachments } = inputs;
     logger.info(`channel_id: ${channel_id}`);
+    if (skip_send_message === true) {
+      logger.info("[skip postMessage] because of attachments is empty");
+      return {
+        outputs: {
+          ok: true,
+        },
+      };
+    }
     const chatResponse = await client.chat.postMessage(
       {
         channel: channel_id,

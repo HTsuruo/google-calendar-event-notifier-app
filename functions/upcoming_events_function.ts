@@ -27,6 +27,9 @@ export const UpcomingEventsDefinition = DefineFunction({
       text: {
         type: Schema.types.string,
       },
+      skip_send_message: {
+        type: Schema.types.boolean,
+      },
       attachments: {
         type: Schema.types.array,
         items: {
@@ -84,6 +87,7 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
+        skip_send_message: filteredEvents.length < 1,
         text: `${minute}分後にイベントが開始します`,
         attachments: filteredEvents?.map((
           event,
