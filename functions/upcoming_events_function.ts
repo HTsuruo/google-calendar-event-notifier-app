@@ -1,7 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { getDateTime, makeEventAttachment } from "./util.ts";
 import { fetchCalendarEvents } from "./google_calendar_api.ts";
-import { datetime } from "ptera/mod.ts";
+import * as logger from "logger";
 
 const callback_id = "upcoming_events_function";
 const minute = 15;
@@ -58,11 +58,13 @@ export default SlackFunction(
     }
 
     const now = getDateTime();
+    // TODO(tsuruoka): タイムゾーンがずれると`add`の結果がおかしくなる件
     const afterMinutesFromNow = now.add({ minute });
     const { start, end } = {
       start: now.toJSDate(),
       end: afterMinutesFromNow.toJSDate(),
     };
+    logger.info(Deno.inspect({ start, end }));
     const events = await fetchCalendarEvents(
       {
         externalToken,
@@ -72,8 +74,8 @@ export default SlackFunction(
       },
     );
     const filteredEvents = events!.filter((e) => {
-      const startTime = datetime(e.start?.dateTime!);
-      const endTime = datetime(e.end?.dateTime!);
+      const startTime = getDateTime(e.start?.dateTime!);
+      const endTime = getDateTime(e.end?.dateTime!);
 
       // 終日イベント判定
       const isAllDayEvent = startTime.hour === endTime.hour &&

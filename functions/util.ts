@@ -5,9 +5,9 @@ import { Attachment } from "./type.ts";
 
 // タイムゾーン固定して現在時刻を取得するラッパー
 // ローカル開発の`slack run`では`Asia/Tokyo`になっているが、デプロイ時には`UTC`になるため固定が必須
-export function getDateTime(): DateTime {
+export function getDateTime(date?: Date): DateTime {
   // Change this to your required timezone
-  return datetime().toZonedTime("Asia/Tokyo");
+  return datetime(date).toZonedTime("Asia/Tokyo");
 }
 
 // 今日の0時と24時を取得する

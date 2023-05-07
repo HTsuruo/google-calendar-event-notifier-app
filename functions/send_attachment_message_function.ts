@@ -38,10 +38,12 @@ export default SlackFunction(
     const { channel_id, skip_send_message, text, attachments } = inputs;
     logger.info(`channel_id: ${channel_id}`);
     if (skip_send_message === true) {
-      logger.info("[skip postMessage] because of attachments is empty");
+      const reason = "events not found";
+      logger.info(`[skip postMessage] because of ${reason}`);
       return {
         outputs: {
-          ok: true,
+          send: false,
+          readon: reason,
         },
       };
     }
@@ -54,7 +56,7 @@ export default SlackFunction(
     );
     return {
       outputs: {
-        ok: chatResponse.ok,
+        send: chatResponse.ok,
       },
     };
   },
