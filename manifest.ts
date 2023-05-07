@@ -36,7 +36,7 @@ export default Manifest({
   name: "Google Calendar Event",
   description:
     "A alternative Google Calendar for Team Events. This app notifies Google Calendar events to Slack channel.",
-  icon: "assets/default_new_app_icon.png",
+  icon: "assets/google_calendar_icon.png",
   workflows: [PostTodayEventsWorkflow, UpcominigEventsWorkflow],
   externalAuthProviders: [GoogleProvider],
   outgoingDomains: [
