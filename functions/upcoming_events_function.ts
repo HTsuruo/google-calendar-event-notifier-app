@@ -1,7 +1,8 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { getDateTime, makeEventAttachment } from "./util.ts";
+import { formatStartAndEndTime, makeEventAttachment } from "./util.ts";
 import { fetchCalendarEvents } from "./google_calendar_api.ts";
 import * as logger from "logger";
+import { datetime } from "https://deno.land/x/ptera@v1.0.2/datetime.ts";
 
 const callback_id = "upcoming_events_function";
 const minute = 15;
@@ -57,14 +58,11 @@ export default SlackFunction(
       throw new Error("Cannot get externalToken");
     }
 
-    const now = getDateTime();
-    // TODO(tsuruoka): タイムゾーンがずれると`add`の結果がおかしくなる件
-    const afterMinutesFromNow = now.add({ minute });
-    const { start, end } = {
-      start: now.toJSDate(),
-      end: afterMinutesFromNow.toJSDate(),
-    };
-    logger.info(Deno.inspect({ start, end }));
+    const now = datetime();
+    const { start, end } = formatStartAndEndTime({
+      start: now,
+      end: now.add({ minute }),
+    });
     const events = await fetchCalendarEvents(
       {
         externalToken,
@@ -74,16 +72,26 @@ export default SlackFunction(
       },
     );
     const filteredEvents = events!.filter((e) => {
-      const startTime = getDateTime(e.start?.dateTime!);
-      const endTime = getDateTime(e.end?.dateTime!);
+      const startTime = datetime(e.start?.dateTime!);
+      const endTime = datetime(e.end?.dateTime!);
 
       // 終日イベント判定
       const isAllDayEvent = startTime.hour === endTime.hour &&
         startTime.minute === endTime.minute &&
         startTime.second === endTime.second;
 
+      // logger.info(
+      //   `startTime: ${startTime.toISO()}, endTime: ${endTime.toISO()}`,
+      // );
+      // logger.info(
+      //   `between-start: ${datetime(start).toISO()}, between-end: ${
+      //     datetime(end).toISO()
+      //   }`,
+      // );
+
       // 単一イベントかつ開始時間のみが対象（15分おきに実行されるためイベント中も含まれてしまう問題の対処）
-      return !isAllDayEvent && startTime.isBetween(now, afterMinutesFromNow);
+      return !isAllDayEvent &&
+        startTime.isBetween(datetime(start), datetime(end));
     });
 
     return {

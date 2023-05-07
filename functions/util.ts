@@ -3,16 +3,12 @@ import type { Event } from "google-calendar-api";
 import * as logger from "logger";
 import { Attachment } from "./type.ts";
 
-// タイムゾーン固定して現在時刻を取得するラッパー
-// ローカル開発の`slack run`では`Asia/Tokyo`になっているが、デプロイ時には`UTC`になるため固定が必須
-export function getDateTime(date?: Date): DateTime {
-  // Change this to your required timezone
-  return datetime(date).toZonedTime("Asia/Tokyo");
-}
+// ローカル開発の`slack run`では`Asia/Tokyo`になっているが、デプロイ時には`UTC`になるため指定する
+const timezone = "Asia/Tokyo";
 
 // 今日の0時と24時を取得する
 export function getTodayStartAndEnd(): { start: Date; end: Date } {
-  const now = getDateTime();
+  const now = datetime();
   const today = datetime(
     {
       year: now.year,
@@ -21,12 +17,19 @@ export function getTodayStartAndEnd(): { start: Date; end: Date } {
     },
   );
   const tommorow = today.add({ day: 1 });
-  const startAndEnd = {
-    start: today.toJSDate(),
-    end: tommorow.toJSDate(),
+  return formatStartAndEndTime({ start: today, end: tommorow });
+}
+
+export function formatStartAndEndTime(
+  param: { start: DateTime; end: DateTime },
+) {
+  const { start, end } = param;
+  const startAndEndTime = {
+    start: start.toZonedTime(timezone).toJSDate(),
+    end: end.toZonedTime(timezone).toJSDate(),
   };
-  logger.info(Deno.inspect(startAndEnd, { compact: false }));
-  return startAndEnd;
+  logger.info(Deno.inspect(startAndEndTime, { compact: false }));
+  return startAndEndTime;
 }
 
 // Calendar EventをもとにSlackのAttachmentを作成する
