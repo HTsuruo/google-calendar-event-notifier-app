@@ -1,7 +1,7 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import { makeEventAttachment } from "./util.ts";
 import { fetchCalendarEvents } from "./google_calendar_api.ts";
-import { datetime } from "https://deno.land/x/ptera@v1.0.2/datetime.ts";
+import { datetime } from "ptera/mod.ts";
 
 const callback_id = "upcoming_events_function";
 const minute = 15;
@@ -87,8 +87,9 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        skip_send_message: filteredEvents.length < 1,
-        text: `${minute}分後にイベントが開始します`,
+        skip_send_message: false,
+        text: Deno.inspect(now),
+        // text: `${minute}分後にイベントが開始します`,
         attachments: filteredEvents?.map((
           event,
         ) => JSON.stringify(makeEventAttachment({ event, color: "#FF82B2" }))),
