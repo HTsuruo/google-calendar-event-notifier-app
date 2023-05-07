@@ -87,9 +87,8 @@ export default SlackFunction(
     return {
       outputs: {
         channel_id: env.SLACK_CHANNEL_ID,
-        skip_send_message: false,
-        text: Deno.inspect(now),
-        // text: `${minute}分後にイベントが開始します`,
+        skip_send_message: filteredEvents.length < 1,
+        text: `${minute}分後にイベントが開始します`,
         attachments: filteredEvents?.map((
           event,
         ) => JSON.stringify(makeEventAttachment({ event, color: "#FF82B2" }))),
