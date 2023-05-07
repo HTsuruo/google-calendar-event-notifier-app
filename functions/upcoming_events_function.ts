@@ -1,5 +1,5 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
-import { makeEventAttachment } from "./util.ts";
+import { getDateTime, makeEventAttachment } from "./util.ts";
 import { fetchCalendarEvents } from "./google_calendar_api.ts";
 import { datetime } from "ptera/mod.ts";
 
@@ -57,7 +57,7 @@ export default SlackFunction(
       throw new Error("Cannot get externalToken");
     }
 
-    const now = datetime();
+    const now = getDateTime();
     const afterMinutesFromNow = now.add({ minute });
     const { start, end } = {
       start: now.toJSDate(),

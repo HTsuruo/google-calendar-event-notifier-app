@@ -1,11 +1,20 @@
-import { datetime } from "ptera/mod.ts";
+import { DateTime, datetime } from "ptera/mod.ts";
 import type { Event } from "google-calendar-api";
 import * as logger from "logger";
 import { Attachment } from "./type.ts";
 
+// タイムゾーン固定して現在時刻を取得するラッパー
+// ローカル開発の`slack run`では`Asia/Tokyo`になっているが、デプロイ時には`UTC`になるため固定が必須
+export function getDateTime(): DateTime {
+  return datetime(undefined, {
+    // Change the timezone to your required timezone
+    timezone: "Asia/Tokyo",
+  });
+}
+
 // 今日の0時と24時を取得する
 export function getTodayStartAndEnd(): { start: Date; end: Date } {
-  const now = datetime();
+  const now = getDateTime();
   const today = datetime(
     {
       year: now.year,
